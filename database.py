@@ -1,4 +1,5 @@
 import peewee
+import pandas as pd
 from datetime import datetime
 
 
@@ -32,6 +33,14 @@ class DatabaseWorker:
         query = self.connection.select(*columns or '').where(rows).tuples()
         return [i for i in query]
 
+    def insert_from_csv(self, path):
+        """
+        :param path: path to csv file
+        :return: None
+        """
+        data = pd.read_csv(path).to_dict('records')
+        self.connection.insert(data).on_conflict('replace').execute()
+
     def insert(self, data):
         """
         :param data: list(dict())
@@ -63,4 +72,6 @@ if __name__ == '__main__':
             {"field_1": 2, "field_2": 3}
         ]
     )
-    print(connection.select(columns=[MyTable.id],rows=MyTable.id == 3))
+
+    connection.insert_from_csv("file.csv")
+    print(connection.select())
