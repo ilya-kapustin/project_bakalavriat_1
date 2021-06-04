@@ -73,5 +73,5 @@ if __name__ == '__main__':
         ]
     )
 
-    connection.insert_from_csv("file.csv")
+    # connection.insert_from_csv("file.csv")
     print(connection.select())
