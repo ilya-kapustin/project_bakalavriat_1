@@ -1,16 +1,19 @@
 import visual as vi
 from aggregator import *
+from database import DatabaseWorker
 
 
 class GetData:
 
     def __init__(self):
         self.data = list()
+        self.df = list()
         self.graph_number = int()
 
         self.save_path = ''
         self.file_name = ''
         self.form = ''
+        self.connection = DatabaseWorker()
 
     @staticmethod
     def checker(user_input):
@@ -112,6 +115,34 @@ class GetData:
             value = input('Введите ключевое значение: ')
             return value
 
+    def insert_data(self, cols, values, name):
+        val = values.split(",")
+        col = cols.split(",")
+        self.df.append(dict(zip(col, val)))
+        self.connection.insert(pd.DataFrame(self.df), name)
+
+    def save_df(self):
+        print('''Сохранить ли данные в базе данных 0 или 1''')
+        value = int(input('Введите ключевое значение: '))
+        if value == 1:
+            print('''Сохранить как файл или ввести вручную?''')
+            value = input('Введите ключевое значение файл или вручную: ')
+            if value == 'файл':
+                print('''Введите название файла''')
+                file = input('Введите ключевое значение файл или вручную: ')
+                self.connection.insert_from_csv(file)
+            else:
+                print('''Введите имя таблицы''')
+                name = input('Введите ключевое значение файл или вручную: ')
+                print('''Введите имена колонок''')
+                cols = input('Введите ключевое значение файл или вручную: ')
+                print('''Введите данные или Exit для выхода''')
+                while True:
+                    values = input('Введите ключевое значение файл или вручную: ')
+                    if values == 'exit':
+                        return None
+                    self.insert_data(cols, values, name)
+
 
 analysis = GetData()
 
@@ -119,8 +150,11 @@ analysis.preprocess()
 df = analysis.get_agg()
 params = analysis.get_graph()
 analysis.get_save()
-
 visualisator = vi.Visual(df=df, graph_number=analysis.graph_number,
                          save_path=analysis.save_path, file_name=analysis.file_name, form=analysis.form)
 
 visualisator.run(params)
+
+
+analysis.save_df()
+
