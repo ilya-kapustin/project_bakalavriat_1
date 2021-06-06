@@ -47,6 +47,7 @@ class DatabaseWorker:
 if __name__ == '__main__':
     # Working with database
     #connection = DatabaseWorker(engine)
-
     #connection.insert_from_csv("file.csv")
     #print(connection.select(table="file"))
+    # connection.insert_from_csv("file.csv")
+    print(connection.select())
