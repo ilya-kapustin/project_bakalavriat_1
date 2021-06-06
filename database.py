@@ -1,77 +1,53 @@
-import peewee
+import sqlite3
 import pandas as pd
-from datetime import datetime
 
 
-database = \
-    peewee.SqliteDatabase('database.db')
-
-
-class DataBase(peewee.Model):
-
-    class Meta:
-        database = database
-
-
-class AbstractTable(DataBase):
-    date_insert = peewee.DateTimeField(default=datetime.now)
+engine = sqlite3.connect('database.db')
 
 
 class DatabaseWorker:
     """ Worker for database manage
     """
 
-    def __init__(self, conn):
-        self.connection = conn
+    def __init__(self, conn=None):
+        self.connection = conn or engine
+        self.data = None
 
-    def select(self, columns=None, rows=None):
+    def select(self, table, columns=None, where=None):
         """
-        :param columns: [TableObject.columns1, TableObject.columns2] or None
-        :param rows: TableObject.columns1  == 1 (expression)
-        :return: list(tuples())
+        :param table: name table
+        :param columns: list columns
+        :param where: filter expressions
+        :return: pd.DataFrame
         """
-        query = self.connection.select(*columns or '').where(rows).tuples()
-        return [i for i in query]
+        to_str = lambda x: ','.join(x)
+
+        self.data = pd.read_sql(f"""select {to_str(columns or '*')} 
+                             from {table} 
+                             where  {to_str(where or '1')}""", self.connection)
+        print(self.data)
 
     def insert_from_csv(self, path):
         """
         :param path: path to csv file
         :return: None
         """
-        data = pd.read_csv(path).to_dict('records')
-        self.connection.insert(data).on_conflict('replace').execute()
+        data = pd.read_csv(path)
+        self.insert(data, path.split("/")[-1].split(".")[0])
 
-    def insert(self, data):
+    def insert(self, data, table):
         """
-        :param data: list(dict())
-                [
-                    {"field_1": 1, "field_2": 1},
-                    {"field_1": 2, "field_2": 3}
-                ]
+        :param data: pd.DataFrame
+        :param table: name table
         :return: None
         """
-        self.connection.insert_many(data).on_conflict('replace').execute()
+        data.to_sql(table, self.connection, if_exists='append', index=False)
 
 
 if __name__ == '__main__':
-
-    #Create Scheme
-    class MyTable(AbstractTable):
-        field_1 = peewee.IntegerField()
-        field_2 = peewee.IntegerField()
-
-    # Create Table
-    database.create_tables([MyTable])
-
     # Working with database
-    connection = DatabaseWorker(MyTable)
-
-    connection.insert(
-        [
-            {"field_1": 1, "field_2": 1},
-            {"field_1": 2, "field_2": 3}
-        ]
-    )
-
+    #connection = DatabaseWorker(engine)
+    #connection.insert_from_csv("file.csv")
+    #print(connection.select(table="file"))
     # connection.insert_from_csv("file.csv")
     print(connection.select())
