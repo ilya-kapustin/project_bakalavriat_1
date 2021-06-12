@@ -4,7 +4,7 @@ import pandas as pd
 
 engine = sqlite3.connect('database.db')
 
-
+# ready
 class DatabaseWorker:
     """ Worker for database manage
     """

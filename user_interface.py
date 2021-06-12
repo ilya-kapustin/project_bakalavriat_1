@@ -2,7 +2,7 @@ import visual as vi
 from aggregator import *
 from database import DatabaseWorker
 
-
+# ready
 class GetData:
 
     def __init__(self):
