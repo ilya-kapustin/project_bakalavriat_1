@@ -1,6 +1,7 @@
 import visual as vi
 from aggregator import *
 from database import DatabaseWorker
+import re
 
 # ready
 class GetData:
@@ -31,13 +32,17 @@ class GetData:
             print('Текущий фрейм\n', df)
 
     def db_init(self):
+        pattern = r'^\w+'
         print('Инициализация базы данных')
         frame_count = input("Введите количество файлов ")
         if GetData.checker(frame_count):
             for _ in range(int(frame_count)):
                 name = input('Введите название файла с данными: ')
                 df = pd.read_csv(name)
-                self.connection.insert(df, 'kiva_loans')
+
+                name = re.findall(pattern, name)[0]
+
+                self.connection.insert(df, name)
 
     def preprocess(self):
         frame_count = input("Введите количество датафреймов ")
