@@ -22,10 +22,11 @@ class DatabaseWorker:
         """
         to_str = lambda x: ','.join(x)
 
-        self.data = pd.read_sql(f"""select {to_str(columns or '*')} 
+        self.data = pd.read_sql(f"""select {to_str(columns if columns else '*')} 
                              from {table} 
-                             where  {to_str(where or '1')}""", self.connection)
+                             where  {to_str(where if where else '1')}""", self.connection)
         print(self.data)
+        return self.data
 
     def insert_from_csv(self, path):
         """
@@ -50,4 +51,5 @@ if __name__ == '__main__':
     #connection.insert_from_csv("file.csv")
     #print(connection.select(table="file"))
     # connection.insert_from_csv("file.csv")
-    print(connection.select())
+    # print(connection.select())
+    pass
