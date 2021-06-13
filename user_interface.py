@@ -1,8 +1,9 @@
 import visual as vi
 from aggregator import *
 from database import DatabaseWorker
+import re
 
-
+# ready
 class GetData:
 
     def __init__(self):
@@ -30,13 +31,28 @@ class GetData:
         else:
             print('Текущий фрейм\n', df)
 
-    def preprocess(self):
-        frame_count = input("Введите количество датафреймов ")
+    def db_init(self):
+        pattern = r'^\w+'
+        print('Инициализация базы данных')
+        frame_count = input("Введите количество файлов ")
         if GetData.checker(frame_count):
             for _ in range(int(frame_count)):
                 name = input('Введите название файла с данными: ')
                 df = pd.read_csv(name)
+
+                name = re.findall(pattern, name)[0]
+
+                self.connection.insert(df, name)
+
+    def preprocess(self):
+        frame_count = input("Введите количество датафреймов ")
+        if GetData.checker(frame_count):
+            for _ in range(int(frame_count)):
+                name = input('Введите название таблицы: ')
+                df = self.connection.select(table=name)
+                # print(df)
                 self.data.append(df)
+
         else:
             print("Введите число")
             return self.preprocess()
@@ -146,6 +162,7 @@ class GetData:
 
 analysis = GetData()
 
+analysis.db_init()
 analysis.preprocess()
 df = analysis.get_agg()
 params = analysis.get_graph()
